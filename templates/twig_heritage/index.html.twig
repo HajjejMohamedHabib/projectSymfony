@@ -1,0 +1,10 @@
+{% extends 'twig_heritage/heritage.html.twig' %}
+{% block titleBlock %}
+    test de heritage
+{% endblock %}
+{% block pageCorp %}
+    {{ parent() }}
+<div class="alert alert-success">
+    le test est bien effectué
+</div>
+{% endblock %}

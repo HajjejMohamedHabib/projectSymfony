@@ -20,4 +20,16 @@ class TableauController extends AbstractController
             'notes'=>$notes,
         ]);
     }
+    #[Route('/users', name: 'app_users')]
+public function users(): Response
+    {
+        $users=[
+            ['firstname'=>'John','lastname'=>'Doe','age'=>20],
+            ['firstname'=>'Jane','lastname'=>'Doe','age'=>30],
+            ['firstname'=>'ahmed','lastname'=>'hajjej','age'=>23]
+        ];
+        return $this->render('tableau/users.html.twig', [
+            'users'=>$users
+        ]);
+    }
 }
