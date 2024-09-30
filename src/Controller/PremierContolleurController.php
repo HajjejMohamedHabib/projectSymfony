@@ -8,12 +8,10 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class PremierContolleurController extends AbstractController
 {
-    #[Route('/premier', name: 'premier')]
+    #[Route('/template', name: 'template')]
     public function index(): Response
     {
-        return $this->render('premier_contolleur/index.html.twig', [
-        
-        ]);
+        return $this->render('template.html.twig');
     }
     #[Route('/hello', name:'hello')]
     public function premierFunction():response
