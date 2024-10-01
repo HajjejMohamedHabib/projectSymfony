@@ -58,12 +58,27 @@ class PersonneController extends AbstractController
         ]);
     }
     #[Route('/delete/{id<\d+>}', name: 'personne.delete')]
-public function deletePersonne (ManagerRegistry $doctrine, Personne $personne): RedirectResponse{
+public function deletePersonne (ManagerRegistry $doctrine, Personne $personne=null): RedirectResponse{
         if($personne){
             $entityManager = $doctrine->getManager();
             $entityManager->remove($personne);
             $entityManager->flush();
             $this->addFlash('success',"la personne a été supprimée avec succes ");
+        }else{
+            $this->addFlash('error'," personne n'existe pas ");
+        }
+        return $this->redirectToRoute('personne.all');
+    }
+    #[Route('/update/{id<\d+>}/{firstname}/{lastname}/{age}', name: 'personne.update')]
+    public function updatePersonne (ManagerRegistry $doctrine, Personne $personne=null,$firstname,$lastname,$age): RedirectResponse{
+        if($personne){
+            $entityManager = $doctrine->getManager();
+            $personne->setFirstname($firstname);
+            $personne->setLastname($lastname);
+            $personne->setAge($age);
+            $entityManager->persist($personne);
+            $entityManager->flush();
+            $this->addFlash('success',"la personne a été modifiée avec succes ");
         }else{
             $this->addFlash('error'," personne n'existe pas ");
         }
