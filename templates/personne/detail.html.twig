@@ -1,13 +1,21 @@
 {% extends 'template.html.twig' %}
 
 {% block body %}
-  <div class="alert alert-success">
-      {{ personne1.firstname }} {{ personne1.lastname }} a {{ personne1.age }} ans </br>
-      {{ personne2.firstname }} {{ personne2.lastname }} a {{ personne2.age }} ans
+  <div class="card" style="width: 18rem;">
+    <div class="card-body">
+      <h5 class="card-title">{{ personne.firstname }}</h5>
+      <h6 class="card-subtitle mb-2 text-muted">{{ personne.lastname }}</h6>
+      <p class="card-text">Age : {{ personne.age }} ans</p>
+      <a href="#" class="card-link">...</a>
+
+    </div>
   </div>
 {% endblock %}
 
 {% block title %}
   liste des personnes
+{% endblock %}
+{% block pageTitle %}
+ Detail de personne
 {% endblock %}
 
