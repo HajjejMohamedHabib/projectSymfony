@@ -14,6 +14,7 @@ Person List
             <h6 class="card-subtitle mb-2 text-muted">{{ personne.lastname }}</h6>
             <p class="card-text"> {{ personne.age}} ans</p>
             <a href="{{ path('personne.detail',{id :personne.id}) }}" class="card-link">Detail</a>
+            <a href="{{ path('personne.delete',{id :personne.id}) }}" class="card-link">delete</a>
 
         </div>
 
