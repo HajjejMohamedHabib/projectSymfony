@@ -1,10 +1,13 @@
-{% extends 'base.html.twig' %}
+{% extends 'template.html.twig' %}
 
 {% block body %}
-
+  <div class="alert alert-success">
+      {{ personne1.firstname }} {{ personne1.lastname }} a {{ personne1.age }} ans </br>
+      {{ personne2.firstname }} {{ personne2.lastname }} a {{ personne2.age }} ans
+  </div>
 {% endblock %}
 
 {% block title %}
-
+  liste des personnes
 {% endblock %}
 
