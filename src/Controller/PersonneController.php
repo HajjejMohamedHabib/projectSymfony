@@ -17,6 +17,24 @@ class PersonneController extends AbstractController
         $personnes = $repository->findAll();
         return $this->render('personne/index.html.twig',['personnes'=>$personnes]);
     }
+    #[Route('/liste/age/{ageMin}/{ageMax}', name: 'personne.liste.age')]
+    public function DisplayByAgeInterval(ManagerRegistry $doctrine,$ageMin,$ageMax): Response{
+        $repository = $doctrine->getRepository(Personne::class);
+        $personnes = $repository->findPersonnesByAgeInterval($ageMin,$ageMax);
+        return $this->render('personne/index.html.twig',[
+            'personnes'=>$personnes,
+        ]);
+    }
+    #[Route('/stat/age/{ageMin}/{ageMax}', name: 'personne.stat.age')]
+    public function statByAgeInterval(ManagerRegistry $doctrine,$ageMin,$ageMax): Response{
+        $repository = $doctrine->getRepository(Personne::class);
+        $stats = $repository->statPersonnesByAgeInterval($ageMin,$ageMax);
+        return $this->render('personne/stats.html.twig',[
+            'stats'=>$stats[0],
+             'ageMin'=>$ageMin,
+              'ageMax'=>$ageMax,
+        ]);
+    }
     #[Route('/all/{page?1}/{nbre?12}', name: 'personne.all')]
     public function indexAll(ManagerRegistry $doctrine,$page,$nbre): Response{
         $repository = $doctrine->getRepository(Personne::class);
@@ -28,6 +46,7 @@ class PersonneController extends AbstractController
             'nbPages'=>$nbPages,
             'page'=>$page,
             'nbre'=>$nbre,
+            'isPagination'=>true
         ]);
     }
     #[Route('/detail/{id<\d+>}', name: 'personne.detail')]

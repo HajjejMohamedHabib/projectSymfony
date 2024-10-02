@@ -21,6 +21,9 @@ Person List
     </div>
     {% endfor %}
 </div>
+    {% if isPagination is defined and isPagination==true %}
+        
+
     <div class="row mt-2">
         <nav aria-label="col Page navigation example">
             <ul class="pagination">
@@ -39,4 +42,5 @@ Person List
             </ul>
         </nav>
     </div>
+    {% endif %}
 {% endblock %}
