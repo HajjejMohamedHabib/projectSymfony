@@ -6,10 +6,15 @@ use App\Entity\Personne;
 use App\Form\PersonneType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\String\Slugger\SluggerInterface;
+
 #[Route('/personne')]
 class PersonneController extends AbstractController
 {
@@ -63,7 +68,9 @@ class PersonneController extends AbstractController
         return $this->render('personne/detail.html.twig',['personne'=>$personne]);
     }
     #[Route('/add', name: 'personne.add')]
-    public function addPersonne(ManagerRegistry $doctrine,Request $request): Response
+    public function addPersonne(ManagerRegistry $doctrine,SluggerInterface $slugger,Request $request,
+                                #[Autowire('%kernel.project_dir%/public/uploads/personnes')] string $brochuresDirectory
+    ): Response
     {
 
         $personne=new Personne();
@@ -71,7 +78,24 @@ class PersonneController extends AbstractController
         $form->remove('createdAt');
         $form->remove('updatedAt');
         $form->handleRequest($request);
-        if($form->isSubmitted()){
+        if($form->isSubmitted() && $form->isValid()){
+            /** @var UploadedFile $brochureFile */
+            $photo = $form->get('photo')->getData();
+
+            // this condition is needed because the 'brochure' field is not required
+            // so the PDF file must be processed only when a file is uploaded
+            if ($photo) {
+                $originalFilename = pathinfo($photo->getClientOriginalName(), PATHINFO_FILENAME);
+                // this is needed to safely include the file name as part of the URL
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$photo->guessExtension();
+                try {
+                    $photo->move($brochuresDirectory, $newFilename);
+                } catch (FileException $e) {
+                    echo $e->getMessage();// ... handle exception if something happens during file upload
+                }
+                $personne->setImage($newFilename);
+            }
             $manager = $doctrine->getManager();
             $manager->persist($personne);
             $manager->flush();

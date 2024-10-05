@@ -10,6 +10,9 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "bootstrap": "^5.3.3"
+    "bootstrap": "^5.3.3",
+    "jquery": "^3.7.1",
+    "jQuery": "^1.7.4",
+    "select2": "^4.1.0-rc.0"
   }
 }
