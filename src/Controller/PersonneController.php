@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Personne;
 use App\Form\PersonneType;
+use App\services\MailerService;
+use App\services\UploaderService;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -68,8 +70,12 @@ class PersonneController extends AbstractController
         return $this->render('personne/detail.html.twig',['personne'=>$personne]);
     }
     #[Route('/add', name: 'personne.add')]
-    public function addPersonne(ManagerRegistry $doctrine,SluggerInterface $slugger,Request $request,
-                                #[Autowire('%kernel.project_dir%/public/uploads/personnes')] string $brochuresDirectory
+    public function addPersonne(ManagerRegistry $doctrine,
+                                Request $request,
+                                UploaderService $uploaderService,
+                                MailerService $mailerService,
+                                #[Autowire('%kernel.project_dir%/public/uploads/personnes')]
+                                string $brochuresDirectory
     ): Response
     {
 
@@ -79,13 +85,15 @@ class PersonneController extends AbstractController
         $form->remove('updatedAt');
         $form->handleRequest($request);
         if($form->isSubmitted() && $form->isValid()){
-            /** @var UploadedFile $brochureFile */
+            /**
+             * @var UploadedFile $brochureFile
+             */
             $photo = $form->get('photo')->getData();
 
             // this condition is needed because the 'brochure' field is not required
             // so the PDF file must be processed only when a file is uploaded
             if ($photo) {
-                $originalFilename = pathinfo($photo->getClientOriginalName(), PATHINFO_FILENAME);
+                /*$originalFilename = pathinfo($photo->getClientOriginalName(), PATHINFO_FILENAME);
                 // this is needed to safely include the file name as part of the URL
                 $safeFilename = $slugger->slug($originalFilename);
                 $newFilename = $safeFilename.'-'.uniqid().'.'.$photo->guessExtension();
@@ -93,13 +101,15 @@ class PersonneController extends AbstractController
                     $photo->move($brochuresDirectory, $newFilename);
                 } catch (FileException $e) {
                     echo $e->getMessage();// ... handle exception if something happens during file upload
-                }
+                }*/
+               $newFilename= $uploaderService->uploadFile($photo,$brochuresDirectory);
                 $personne->setImage($newFilename);
             }
             $manager = $doctrine->getManager();
             $manager->persist($personne);
             $manager->flush();
-
+            $message=$personne->getFirstname().' '.$personne->getLastname().' '.'a été ajouté avec succès';
+            $mailerService->sendEmail(subject:'Ajout de user',message: $message);
             $this->addFlash("succes", $personne->getFirstname()." a été ajoutée avec succes");
             return $this->redirectToRoute('personne.all');
         }
@@ -111,13 +121,27 @@ class PersonneController extends AbstractController
         ]);
     }
     #[Route('/update/{id<\d+>}', name: 'personne.update')]
-    public function updatePersonne (ManagerRegistry $doctrine, Personne $personne=null,Request $request): Response{
+    public function updatePersonne (ManagerRegistry $doctrine,
+                                    Personne $personne=null,
+                                    Request $request,
+                                    UploaderService $uploaderService,
+                                    #[Autowire('%kernel.project_dir%/public/uploads/personnes')]
+                                    string $brochuresDirectory): Response{
 
         $form=$this->createForm(PersonneType::class, $personne);
         $form->remove('createdAt');
         $form->remove('updatedAt');
         $form->handleRequest($request);
-        if($form->isSubmitted()){
+        if($form->isSubmitted() && $form->isValid()){
+            /**
+             * @var UploadedFile $brochureFile
+             */
+            $photo = $form->get('photo')->getData();
+            if ($photo) {
+                $newFilename= $uploaderService->uploadFile($photo,$brochuresDirectory);
+                $personne->setImage($newFilename);
+            }
+
             $entityManager = $doctrine->getManager();
             $entityManager->persist($personne);
             $entityManager->flush();

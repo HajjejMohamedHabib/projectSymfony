@@ -13,8 +13,15 @@ Person List
             <h5 class="card-title">{{ personne.firstname }}</h5>
             <h6 class="card-subtitle mb-2 text-muted">{{ personne.lastname }}</h6>
             <p class="card-text"> {{ personne.age}} ans</p>
-            <a href="{{ path('personne.detail',{id :personne.id}) }}" class="card-link">Detail</a>
-            <a href="{{ path('personne.delete',{id :personne.id}) }}" class="card-link">delete</a>
+            <a href="{{ path('personne.detail',{id :personne.id}) }}" class="card-link">
+                <i class="fa-solid fa-circle-info"></i>
+            </a>
+            <a href="{{ path('personne.delete',{id :personne.id}) }}" class="card-link">
+                <i class="fa-solid fa-user-xmark"></i>
+            </a>
+            <a href="{{ path('personne.update',{id :personne.id}) }}" class="card-link">
+                <i class="fa-solid fa-user-pen"></i>
+            </a>
 
         </div>
 
