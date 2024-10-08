@@ -104,8 +104,10 @@ class PersonneController extends AbstractController
                 }*/
                $newFilename= $uploaderService->uploadFile($photo,$brochuresDirectory);
                 $personne->setImage($newFilename);
+
             }
             $manager = $doctrine->getManager();
+            $personne->setCreatedBy($this->getUser());
             $manager->persist($personne);
             $manager->flush();
             $message=$personne->getFirstname().' '.$personne->getLastname().' '.'a été ajouté avec succès';
