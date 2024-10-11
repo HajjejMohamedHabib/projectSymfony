@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Personne;
+use App\event\AddPersonneEvent;
 use App\Form\PersonneType;
 use App\services\MailerService;
 use App\services\UploaderService;
@@ -15,11 +16,18 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
-#[Route('/personne')]
+#[Route('/personne'),
+IsGranted('ROLE_USER')
+]
 class PersonneController extends AbstractController
 {
+    public function __construct(private EventDispatcherInterface $eventDispatcher){
+
+    }
     #[Route('/liste', name: 'personne.liste')]
     public function index(ManagerRegistry $doctrine): Response{
         $repository = $doctrine->getRepository(Personne::class);
@@ -69,7 +77,8 @@ class PersonneController extends AbstractController
         }
         return $this->render('personne/detail.html.twig',['personne'=>$personne]);
     }
-    #[Route('/add', name: 'personne.add')]
+    #[Route('/add', name: 'personne.add'),
+    IsGranted('ROLE_ADMIN')]
     public function addPersonne(ManagerRegistry $doctrine,
                                 Request $request,
                                 UploaderService $uploaderService,
@@ -110,6 +119,8 @@ class PersonneController extends AbstractController
             $personne->setCreatedBy($this->getUser());
             $manager->persist($personne);
             $manager->flush();
+            $addPersonneEvent = new AddPersonneEvent($personne);
+            $this->eventDispatcher->dispatch($addPersonneEvent,AddPersonneEvent::Add_PERSONNE_EVENT);
             $message=$personne->getFirstname().' '.$personne->getLastname().' '.'a été ajouté avec succès';
             $mailerService->sendEmail(subject:'Ajout de user',message: $message);
             $this->addFlash("succes", $personne->getFirstname()." a été ajoutée avec succes");
@@ -122,7 +133,9 @@ class PersonneController extends AbstractController
          'form' => $form->createView()
         ]);
     }
-    #[Route('/update/{id<\d+>}', name: 'personne.update')]
+    #[Route('/update/{id<\d+>}', name: 'personne.update'),
+    IsGranted('ROLE_ADMIN')
+    ]
     public function updatePersonne (ManagerRegistry $doctrine,
                                     Personne $personne=null,
                                     Request $request,
@@ -156,7 +169,9 @@ class PersonneController extends AbstractController
 
         ]);
     }
-    #[Route('/delete/{id<\d+>}', name: 'personne.delete')]
+    #[Route('/delete/{id<\d+>}', name: 'personne.delete'),
+    IsGranted('ROLE_ADMIN')
+    ]
 public function deletePersonne (ManagerRegistry $doctrine, Personne $personne=null): RedirectResponse{
         if($personne){
             $entityManager = $doctrine->getManager();
